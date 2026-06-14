@@ -1108,16 +1108,18 @@ async function sendMessage() {
       console.log('Raw first 200 chars:', raw.substring(0,200));
       if(start !== -1 && end !== -1) {
         let jsonStr = clean.substring(start, end+1);
-        // Fix common special characters that break JSON parsing
+        // Fix special characters
         jsonStr = jsonStr
-          .replace(/[\u2018\u2019]/g, "'")
-          .replace(/[\u201C\u201D]/g, '"')
+          .replace(/[\u2018\u2019]/g, "\\'")
+          .replace(/[\u201C\u201D]/g, '\\"')
           .replace(/\u2014/g, '-')
           .replace(/\u2013/g, '-')
-          .replace(/\u2022/g, '*')
-          .replace(/\u00e9/g, 'e')
-          .replace(/\r\n/g, ' ')
-          .replace(/\r/g, ' ');
+          .replace(/\u2022/g, '*');
+        // Fix unescaped newlines inside JSON string values
+        // Replace literal newlines that are inside JSON strings
+        jsonStr = jsonStr.replace(/"([^"]*)"/g, function(match) {
+          return match.replace(/\n/g, '\\n').replace(/\r/g, '').replace(/\t/g, ' ');
+        });
         const candidate = JSON.parse(jsonStr);
         console.log('Parsed mode:', candidate.mode, 'fda_pathway:', candidate.fda_pathway, 'risk_score:', candidate.risk_score);
         const isRA = candidate.mode === 'ra'
@@ -1147,7 +1149,7 @@ async function sendMessage() {
       // If raw looks like JSON but failed validation — ask user for more detail
       const looksLikeJson = raw.trim().startsWith('{') || raw.trim().startsWith('```');
       const fallbackMsg = looksLikeJson
-        ? 'I need a bit more detail to complete the analysis. Could you tell me more about the intended use, target market, or any known regulatory history for this product?'
+        ? fmt(raw)
         : fmt(raw);
       addMsg('ai', fallbackMsg);
       history.push({role:'assistant',content:raw});
