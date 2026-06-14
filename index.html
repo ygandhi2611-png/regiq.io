@@ -1164,7 +1164,7 @@ function renderResults(d) {
   }).join('');
 
   var riskItems=items.map(function(r){
-    return '<div class="ritem"><span class="rbadge '+r.level+'">'+r.level+'</span><span>'+r.text+'</span></div>';
+    return '<div class="ritem"><span class="rbadge '+r.level+'">'+r.level+'</span><span>'+fmt(r.text)+'</span></div>';
   }).join('');
 
   var regTags=regs.map(function(r){
@@ -1213,7 +1213,7 @@ function renderResults(d) {
     '</div>'+
     raBlocks+qaBlocks+
     '<div class="rb s3"><div class="rbl">'+scoreType+' Breakdown</div><div class="bdwn">'+bdRows+'</div></div>'+
-    '<div class="rb s3"><div class="rbl">Strategic Summary</div><div style="font-size:0.83rem;line-height:1.78;color:var(--muted)">'+d.summary+'</div></div>'+
+    '<div class="rb s3"><div class="rbl">Strategic Summary</div><div style="font-size:0.83rem;line-height:1.78;color:var(--muted)">'+fmt(d.summary)+'</div></div>'+
     '<div class="rb s3"><div class="rbl">'+itemLabel+'</div><div class="rlist">'+riskItems+'</div></div>'+
     '<div class="rb s3"><div class="rbl">'+regsLabel+'</div><div class="tagrow">'+regTags+'</div></div>'+
     '<div class="rb s3"><div class="rbl">Verify Primary Sources</div><div class="verify-grid">'+verifyLinks+'</div></div>'+
