@@ -257,7 +257,7 @@
     /* Chat */
     .chat-area { padding: 22px; min-height: 200px; display: flex; flex-direction: column; gap: 14px; }
 
-    .msg { display: flex; gap: 10px; max-width: 88%; animation: msgIn 0.24s ease; }
+    .msg { display: flex; gap: 10px; max-width: 88%; animation: msgIn 0.24s ease; min-width: 0; overflow: hidden; }
     @keyframes msgIn { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
     .msg.user { align-self: flex-end; flex-direction: row-reverse; }
 
@@ -273,6 +273,7 @@
       background: var(--bg); border: 1px solid var(--border);
       border-radius: 11px; padding: 11px 15px;
       font-size: 0.85rem; line-height: 1.7; color: var(--text);
+      word-wrap: break-word; overflow-wrap: break-word; min-width: 0;
     }
     .msg.user .msg-bub { background: var(--accent); border-color: var(--accent); color: #fff; }
     .msg-bub strong { color: var(--accent); font-weight: 600; }
@@ -523,28 +524,144 @@
 
     /* ── RESPONSIVE ── */
     @media(max-width:900px){
-      .hero{grid-template-columns:1fr;gap:2rem;padding-top:4rem}
-      .hero-stats{grid-template-columns:repeat(4,1fr)}
-      .hstat.wide{grid-column:1/-1}
-      .rgrid{grid-template-columns:1fr 1fr}
-      .rb.s3{grid-column:span 2}
-      .disc{grid-column:span 2}
-      .verify-grid{grid-template-columns:1fr}
+      .hero { grid-template-columns:1fr; gap:2rem; padding-top:4rem; }
+      .hero h1 { font-size:clamp(1.9rem,5vw,2.6rem); }
+      .hero-sub { max-width:100%; }
+      .hero-stats { grid-template-columns:repeat(4,1fr); }
+      .hstat.wide { grid-column:1/-1; }
+      .rgrid { grid-template-columns:1fr 1fr; }
+      .rb.s3 { grid-column:span 2; }
+      .disc { grid-column:span 2; }
+      .verify-grid { grid-template-columns:1fr; }
+      .mode-selector { grid-template-columns:1fr 1fr; }
+      nav { padding:0 1.5rem; }
+      .tool-wrap, .priv-wrap, .built-by { padding-left:1.5rem; padding-right:1.5rem; }
+      .howto-modal { max-width:95vw; }
     }
-    @media(max-width:620px){
-      nav{padding:0 1rem}
-      .nav-privacy{display:none}
-      .hero{padding:3.5rem 1rem 2rem}
-      .priv-wrap,.tool-wrap,.built-by{padding-left:1rem;padding-right:1rem}
-      .mode-selector{grid-template-columns:1fr}
-      .rgrid{grid-template-columns:1fr}
-      .rb.s2,.rb.s3{grid-column:span 1}
-      .disc{grid-column:span 1}
-      .hero-stats{grid-template-columns:1fr 1fr}
-      .chat-area,.input-row,.ex-strip,.results-area,.reset-row{padding-left:14px;padding-right:14px}
-      .howto-mods{grid-template-columns:1fr}
-      .blbl{width:100px}
-      .ft-inner{flex-direction:column;align-items:flex-start}
+
+    @media(max-width:640px){
+      /* Nav */
+      nav { padding:0 1rem; height:48px; }
+      .nav-privacy { display:none; }
+      .nav-mark { width:24px; height:24px; font-size:9px; }
+      .nav-logo { font-size:1rem; }
+      .nav-feedback { padding:5px 12px; font-size:0.7rem; }
+
+      /* Hero */
+      .hero { padding:3rem 1rem 1.5rem; grid-template-columns:1fr; gap:1.5rem; margin-top:48px; }
+      .hero-eyebrow { font-size:0.62rem; padding:4px 10px; }
+      .hero h1 { font-size:clamp(1.7rem,7vw,2.2rem); margin-bottom:0.8rem; }
+      .hero-sub { font-size:0.85rem; margin-bottom:1.2rem; }
+      .btn-primary { font-size:0.75rem; padding:9px 20px; }
+      .hero-stats { grid-template-columns:1fr 1fr; gap:8px; }
+      .hstat { padding:14px 14px; }
+      .hstat-n { font-size:1.5rem; }
+      .hstat-l { font-size:0.6rem; }
+      .hstat.wide { grid-column:1/-1; padding:14px 14px; }
+      .hstat-pills { gap:4px; }
+      .hstat-pill { font-size:0.6rem; padding:2px 7px; }
+
+      /* Privacy banner */
+      .priv-wrap { padding:0 1rem 1rem; }
+      .priv-inner { flex-direction:column; gap:8px; align-items:flex-start; padding:12px 14px; }
+      .priv-t strong { font-size:0.78rem; }
+      .priv-t span { font-size:0.7rem; }
+      .priv-badge { align-self:flex-start; }
+
+      /* Tool section */
+      .tool-wrap { padding:0 1rem 1.5rem; }
+      .sec-eye { font-size:0.62rem; }
+      .sec-title { font-size:1.4rem; margin-bottom:1rem; }
+
+      /* Mode selector */
+      .mode-selector { grid-template-columns:1fr; gap:8px; margin-bottom:10px; }
+      .mode-card { padding:14px; }
+      .mode-icon { margin-bottom:8px; }
+      .mode-icon svg { width:22px; height:22px; }
+      .mode-title { font-size:0.9rem; margin-bottom:4px; }
+      .mode-desc { font-size:0.73rem; }
+      .mode-tags { display:none; }
+      .mode-badge { font-size:0.6rem; }
+
+      /* Tool card */
+      .step-bar { padding:9px 14px; }
+      .sdot { width:6px; height:6px; }
+      .slabel { font-size:0.6rem; }
+      .sspacer { display:none; }
+      .mode-ind { display:none; }
+
+      /* Chat */
+      .chat-area { padding:14px; gap:12px; min-height:160px; }
+      .msg { max-width:94%; gap:8px; }
+      .msg-av { width:26px; height:26px; font-size:0.58rem; border-radius:6px; }
+      .msg-bub { padding:10px 13px; font-size:0.82rem; border-radius:10px; }
+
+      /* Examples */
+      .ex-strip { padding:11px 14px; }
+      .ex-label { font-size:0.6rem; margin-bottom:7px; }
+      .chip { font-size:0.72rem; padding:5px 11px; border-radius:8px; }
+
+      /* Input */
+      .input-row { padding:11px 14px; gap:8px; }
+      .input-row textarea { font-size:0.82rem; padding:10px 12px; min-height:42px; border-radius:9px; }
+      .send-btn { width:38px; height:38px; border-radius:9px; }
+      .send-btn svg { width:14px; height:14px; }
+
+      /* Results */
+      .results-area { padding:0 14px 14px; }
+      .results-hdr { flex-direction:column; align-items:flex-start; gap:8px; padding:14px 0 12px; }
+      .results-title { font-size:1rem; }
+      .res-actions { display:flex; gap:6px; width:100%; }
+      .res-btn { flex:1; text-align:center; font-size:0.64rem; padding:7px 10px; }
+      .rgrid { grid-template-columns:1fr; gap:7px; }
+      .rb { padding:14px; border-radius:12px; }
+      .rb.s2, .rb.s3 { grid-column:span 1; }
+      .disc { grid-column:span 1; padding:11px 13px; font-size:0.7rem; }
+      .rbv.score { font-size:2.2rem; }
+      .rbl { font-size:0.58rem; margin-bottom:7px; }
+      .rbv { font-size:0.84rem; }
+      .blbl { width:105px; font-size:0.7rem; }
+      .bnum { font-size:0.65rem; }
+      .ritem { font-size:0.77rem; padding:8px 0; gap:7px; }
+      .rbadge { font-size:0.57rem; padding:2px 6px; }
+      .verify-grid { grid-template-columns:1fr; gap:5px; }
+      .verify-link { padding:8px 11px; border-radius:8px; }
+      .vl-name { font-size:0.7rem; }
+      .vl-sub { font-size:0.62rem; }
+      .tagrow { gap:4px; }
+      .rtag { font-size:0.65rem; padding:3px 8px; }
+
+      /* Reset */
+      .reset-row { padding:0 14px 14px; }
+
+      /* Built by */
+      .built-by { padding:1.2rem 1rem; flex-direction:column; align-items:flex-start; gap:10px; margin-top:1.2rem; }
+      .by-name { font-size:0.92rem; }
+      .by-btn { font-size:0.7rem; padding:6px 14px; }
+
+      /* Footer */
+      footer { padding:1.2rem 1rem; }
+      .ft-inner { flex-direction:column; align-items:flex-start; gap:6px; }
+      .ft-logo { font-size:0.88rem; }
+      .ft-sub { font-size:0.62rem; }
+      .ft-disc { font-size:0.6rem; margin-top:0.8rem; }
+
+      /* Info button */
+      .info-btn { bottom:14px; right:14px; width:38px; height:38px; border-radius:9px; }
+      .info-btn svg { width:16px; height:16px; }
+
+      /* How to modal */
+      .howto-modal { max-width:100%; border-radius:16px 16px 0 0; margin-top:auto; max-height:92vh; }
+      .howto-backdrop { align-items:flex-end; padding:0; }
+      .howto-head { padding:16px 16px 12px; }
+      .howto-title { font-size:1rem; }
+      .howto-body { padding:14px 16px 20px; gap:13px; }
+      .howto-mods { grid-template-columns:1fr; gap:8px; }
+      .hcov-pills { gap:4px; }
+      .hcov-pill { font-size:0.64rem; }
+      .h-num { width:30px; height:30px; border-radius:7px; font-size:0.74rem; }
+      .h-title { font-size:0.82rem; }
+      .h-desc { font-size:0.73rem; }
     }
     /* ── PRINT STYLES ── */
     @media print {
@@ -1124,15 +1241,14 @@ function setSteps(n) {
 
 function fmt(txt) {
   return txt
-    .replace(/^### (.*?)$/gm, '<strong style="font-size:0.88rem;color:var(--text)">$1</strong>')
-    .replace(/^## (.*?)$/gm, '<strong style="font-size:0.9rem;color:var(--text)">$1</strong>')
-    .replace(/^# (.*?)$/gm, '<strong style="font-size:0.95rem;color:var(--text)">$1</strong>')
+    .replace(/^### (.*?)$/gm, '<strong style="font-size:0.84rem;color:var(--text);display:block;margin-top:8px">$1</strong>')
+    .replace(/^## (.*?)$/gm, '<strong style="font-size:0.84rem;color:var(--text);display:block;margin-top:8px">$1</strong>')
+    .replace(/^# (.*?)$/gm, '<strong style="font-size:0.86rem;color:var(--text);display:block;margin-top:8px">$1</strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:8px 0">')
     .replace(/^- (.*?)$/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="color:var(--soft);flex-shrink:0">→</span><span>$1</span></div>')
-    .replace(/^\d+\. (.*?)$/gm, '<div style="display:flex;gap:6px;margin:2px 0"><span style="color:var(--accent);font-weight:600;flex-shrink:0">$&</span></div>')
-    .replace(/\n\n/g, '<br/><br/>')
+    .replace(/\n\n/g, '<br/>')
     .replace(/\n/g, '<br/>');
 }
 
