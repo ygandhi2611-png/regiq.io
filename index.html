@@ -933,7 +933,7 @@ OUTPUT FORMAT (raw JSON only):
   "summary": "2–3 sentence plain-English assessment of QMS readiness and single most critical gap to address before inspection."
 }
 
-RULES: Be specific — exact CFR parts, ISO clause numbers, ICH guideline codes. Score 1–100. Low=1-39 (significant work needed), Moderate=40-69, High=70-100 (well-prepared). verify_links must be real working primary source URLs relevant to this product. Output JSON only when ready — never include any text outside the JSON.`;
+RULES: Be specific — exact CFR parts, ISO clause numbers, ICH guideline codes. Score 1–100. Low=1-39 (significant work needed), Moderate=40-69, High=70-100 (well-prepared). verify_links must be real working primary source URLs relevant to this product. CRITICAL: "ready" field must ALWAYS be true in the final JSON — never output ready:false. Output JSON only when ready — never include any text outside the JSON.`;
 const MODE_INTROS = {
   ra: "Hey! I&rsquo;m <strong>RegIQ</strong> &mdash; your regulatory pathway assistant.<br/><br/>Tell me about your product and I&rsquo;ll identify your submission pathway, lead authority, and risk profile. Or just say hi first if you&rsquo;d like &mdash; I&rsquo;m here.",
   qa: "Hey! I&rsquo;m <strong>RegIQ</strong> &mdash; your QA readiness assistant.<br/><br/>Tell me about your product and QMS situation and I&rsquo;ll score your readiness and flag your top gaps. Or just say hi first &mdash; I&rsquo;m here."
@@ -1050,10 +1050,10 @@ async function sendMessage() {
       if(start !== -1 && end !== -1) {
         const jsonStr = clean.substring(start, end+1);
         const candidate = JSON.parse(jsonStr);
-        if(candidate.ready) parsed = candidate;
+        if(candidate.ready || (candidate.mode && (candidate.risk_score || candidate.readiness_score))) parsed = candidate;
       }
     } catch(e){ parsed = null; }
-    if(parsed?.ready) {
+    if(parsed && (parsed.mode === 'ra' || parsed.mode === 'qa')) {
       history.push({role:'assistant',content:raw}); done=true;
       addMsg('ai', mode==='ra'?'Analysis complete. Here\'s your full regulatory profile:':'Assessment complete. Here\'s your QA readiness profile:');
       document.getElementById('exStrip').style.display='none';
