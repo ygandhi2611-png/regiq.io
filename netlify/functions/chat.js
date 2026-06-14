@@ -1,40 +1,54 @@
 exports.handler = async function(event) {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+  if (event.httpMethod !== "POST") {
+    return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  try {
-    const body = JSON.parse(event.body);
-    const messages = body.messages || [];
-    const systemPrompt = body.system || '';
+  var body = JSON.parse(event.body);
+  var messages = body.messages || [];
+  var systemPrompt = body.system || "";
+  var apiKey = process.env.GEMINI_API_KEY;
 
-    // Convert to Gemini format
-    const contents = [];
-
-    messages.forEach(function(msg) {
-      contents.push({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }]
-      });
+  var contents = [];
+  for (var i = 0; i < messages.length; i++) {
+    contents.push({
+      role: messages[i].role === "assistant" ? "model" : "user",
+      parts: [{ text: messages[i].content }]
     });
+  }
 
-    const geminiBody = {
-      system_instruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: contents,
-      generationConfig: {
-        maxOutputTokens: 1400,
-        temperature: 0.3
-      }
-    };
+  var geminiBody = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents: contents,
+    generationConfig: { maxOutputTokens: 1400, temperature: 0.3 }
+  };
 
-    const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=' + process.env.GEMINI_API_KEY,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(geminiBody)
+  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=" + apiKey;
+
+  var response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(geminiBody)
+  });
+
+  var data = await response.json();
+
+  var text = "";
+  if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+    text = data.candidates[0].content.parts[0].text || "";
+  }
+  if (!text && data.error) {
+    text = "API error: " + data.error.message;
+  }
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    },
+    body: JSON.stringify({ content: [{ type: "text", text: text }] })
+  };
+};        body: JSON.stringify(geminiBody)
       }
     );
 
