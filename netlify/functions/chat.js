@@ -48,7 +48,12 @@ exports.handler = function(event, context, callback) {
           text = data.candidates[0].content.parts[0].text || "";
         }
         if (!text && data.error) {
-          text = "API error: " + data.error.message;
+          var errMsg = data.error.message || "";
+          if (errMsg.indexOf("quota") !== -1 || errMsg.indexOf("Quota") !== -1 || errMsg.indexOf("rate") !== -1) {
+            text = "__RATE_LIMIT__";
+          } else {
+            text = "API error: " + errMsg;
+          }
         }
         callback(null, {
           statusCode: 200,
