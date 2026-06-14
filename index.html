@@ -544,7 +544,43 @@
       .blbl{width:100px}
       .ft-inner{flex-direction:column;align-items:flex-start}
     }
-  </style>
+    /* ── PRINT STYLES ── */
+    @media print {
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { background: #fff !important; }
+      nav, .hero, .priv-wrap, .mode-selector, .step-bar, .chat-area,
+      .ex-strip, .input-row, .reset-row, .built-by, footer,
+      .info-btn, .howto-backdrop, .res-actions { display: none !important; }
+      .tool-card { box-shadow: none !important; border: none !important; }
+      .tool-wrap { padding: 0 !important; max-width: 100% !important; }
+      .sec-eye, .sec-title { display: none !important; }
+      .results-area { display: block !important; padding: 0 !important; }
+      .print-header { display: flex !important; }
+      .rgrid { grid-template-columns: 1fr 1fr !important; }
+      .rb.s3 { grid-column: span 2 !important; }
+      .disc { grid-column: span 2 !important; }
+      .verify-grid { grid-template-columns: 1fr 1fr !important; }
+      .results-hdr { border-top: none !important; padding-top: 0 !important; }
+    }
+
+    /* Print header — hidden on screen, shown on print */
+    .print-header {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--text);
+    }
+    .print-logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: #fff;
+    }
+    .print-logo-name { font-family: var(--serif); font-size: 1.3rem; font-weight: 700; color: var(--text); }
+    .print-logo-sub { font-size: 0.72rem; color: var(--soft); margin-left: auto; }
 </head>
 <body>
 
@@ -671,11 +707,17 @@
     </div>
 
     <div class="results-area" id="resultsArea">
+      <!-- Print header — only visible when printing -->
+      <div class="print-header">
+        <div class="print-logo-mark">Rq</div>
+        <div class="print-logo-name">RegIQ</div>
+        <div class="print-logo-sub">Regulatory &amp; Quality Intelligence &nbsp;·&nbsp; regiq.vercel.app &nbsp;·&nbsp; Generated <span id="printDate"></span></div>
+      </div>
       <div class="results-hdr">
         <div class="results-title" id="resultsTitle">Your Regulatory Profile</div>
         <div class="res-actions">
           <a id="feedbackBtn" href="mailto:ygandhi.corpdesk@outlook.com?subject=RegIQ%20Feedback" class="res-btn">✉ Feedback</a>
-          <button class="res-btn" onclick="window.print()">⎙ Save PDF</button>
+          <button class="res-btn" onclick="printReport()">⎙ Save PDF</button>
         </div>
       </div>
       <div class="rgrid" id="resultGrid"></div>
@@ -850,18 +892,7 @@ QUESTION RULES (critical):
 - Each question must be directly tied to a classification decision. Ask yourself: "If I don't know this, would my pathway recommendation change?" If no — don't ask it.
 - Make questions specific to their product, not generic. Bad: "What is the intended use?" Good: "Does the drug component elute continuously or only during deployment?" 
 - Maximum 2 questions per turn. If you can infer something reasonably — infer it and state your assumption, don't ask.
-- If the user has given rich detail, go directly to analysis with zero questions.
-
-CONVERSATION FLOW:
-1. Read the description. Extract everything already stated. Identify only the genuinely missing classification-critical information.
-2. Ask maximum 2 questions — each specific to their product, never repeating what they said.
-3. After their response, go directly to JSON unless one truly critical detail is still missing.
-4. Output ONLY the JSON when ready — no preamble, no trailing text.
-
-OUTPUT FORMAT (raw JSON only):
-{
-  "ready": true,
-  "mode": "ra",
+- If the user says they don't know, are unsure, or asks you to skip — make a reasonable conservative assumption, state it clearly, and proceed directly to the analysis. Never leave the user stuck.
   "product_type": "Specific product type",
   "industry": "e.g. Pharmaceutical / MedTech",
   "fda_pathway": "e.g. BLA — 351(a) Biologics License Application",
@@ -900,18 +931,7 @@ QUESTION RULES (critical):
 - Each question must be directly tied to the readiness score. Ask yourself: "If I don't know this, would my score or gap assessment change?" If no — don't ask it.
 - Make questions specific to their situation. Bad: "What standard are you targeting?" Good: "Have you completed a design history file for this device, or is development still ongoing?"
 - Maximum 2 questions per turn. If you can infer something reasonably — infer it and state your assumption, don't ask.
-- If the user has given rich detail, go directly to analysis with zero questions.
-
-CONVERSATION FLOW:
-1. Read the description. Extract everything already stated. Identify only genuinely missing assessment-critical information.
-2. Ask maximum 2 questions — each specific to their situation, never repeating what they said.
-3. After their response, go directly to JSON unless one truly critical detail is still missing.
-4. Output ONLY the JSON when ready — no preamble, no trailing text.
-
-OUTPUT FORMAT (raw JSON only):
-{
-  "ready": true,
-  "mode": "qa",
+- If the user says they don't know, are unsure, or asks you to skip — make a reasonable conservative assumption, state it clearly, and proceed directly to the analysis. Never leave the user stuck.
   "product_type": "Specific product and market",
   "applicable_standard": "Primary QMS standard e.g. ISO 13485:2016 + 21 CFR Part 820",
   "gxp_requirements": "e.g. GMP (21 CFR 210/211), GDP, Design Controls (21 CFR 820.30)",
@@ -1033,7 +1053,7 @@ async function sendMessage() {
   setSteps(qCount===0?0:1);
   const thinkEl=showThinking();
   try {
-    const res=await fetch('/api/chat',{
+    const res=await fetch('/.netlify/functions/chat',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,system:mode==='ra'?RA_SYSTEM:QA_SYSTEM,messages:history})
     });
@@ -1082,7 +1102,7 @@ async function sendMessage() {
       renderResults(parsed); setSteps(2);
     } else {
       // If raw looks like JSON but failed validation — ask user for more detail
-      const looksLikeJson = raw.trim().startsWith('{');
+      const looksLikeJson = raw.trim().startsWith('{') || raw.trim().startsWith('```');
       const fallbackMsg = looksLikeJson
         ? 'I need a bit more detail to complete the analysis. Could you tell me more about the intended use, target market, or any known regulatory history for this product?'
         : fmt(raw);
@@ -1175,6 +1195,14 @@ function renderResults(d) {
   var body=encodeURIComponent('Module: '+(isRA?'RA Pathway':'QA Readiness')+'\nProduct: '+d.product_type+'\nScore: '+score+'/100\n\nFeedback:\n');
   document.getElementById('feedbackBtn').href='mailto:ygandhi.corpdesk@outlook.com?subject='+subj+'&body='+body;
   area.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function printReport() {
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('printDate').textContent = dateStr;
+  document.getElementById('resultsArea').scrollIntoView();
+  setTimeout(function() { window.print(); }, 100);
 }
 
 function resetTool() {
