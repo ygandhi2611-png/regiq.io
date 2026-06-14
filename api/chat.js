@@ -21,14 +21,39 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5',
-        max_tokens: 1400,
+        max_tokens: 2000,
         system: req.body.system,
         messages: req.body.messages
       })
     });
 
     const data = await response.json();
-    return res.status(200).json(data);
+    const rawText = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+
+    // Try to extract and validate JSON server-side
+    let cleanText = rawText.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const jsonStart = cleanText.indexOf('{');
+    const jsonEnd = cleanText.lastIndexOf('}');
+
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      try {
+        const jsonStr = cleanText.substring(jsonStart, jsonEnd + 1);
+        const parsed = JSON.parse(jsonStr);
+        // If it parsed successfully and is a valid result, return clean JSON string
+        if (parsed.mode === 'ra' || parsed.mode === 'qa') {
+          return res.status(200).json({
+            content: [{ type: 'text', text: JSON.stringify(parsed) }]
+          });
+        }
+      } catch(e) {
+        // JSON parse failed - return original text as conversational response
+      }
+    }
+
+    // Return original text for conversational messages
+    return res.status(200).json({
+      content: [{ type: 'text', text: rawText }]
+    });
 
   } catch (err) {
     return res.status(500).json({ error: err.message });
