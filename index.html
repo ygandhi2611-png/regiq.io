@@ -887,7 +887,7 @@ OUTPUT FORMAT (raw JSON only):
   "summary": "2–3 sentence plain-English strategic overview and single most important early decision."
 }
 
-RULES: Be specific — exact CFR parts, ICH codes, EU MDR articles. Risk 1–100. Low=1-39, Moderate=40-69, High=70-100. verify_links must be real working URLs relevant to this specific product. Output JSON only when ready — never include any text outside the JSON.`;
+RULES: Be specific — exact CFR parts, ICH codes, EU MDR articles. Risk 1–100. Low=1-39, Moderate=40-69, High=70-100. CRITICAL: Never output JSON with null values — if you need more info ask a follow-up question instead. Every field must have real content. Output JSON only when you have complete information — never include any text outside the JSON.`;
 
 const QA_SYSTEM = `You are RegIQ's QA Readiness module — an expert AI quality assurance assistant with deep knowledge of pharmaceutical and medical device quality systems, GxP requirements, and regulatory inspection expectations globally.
 
@@ -933,7 +933,7 @@ OUTPUT FORMAT (raw JSON only):
   "summary": "2–3 sentence plain-English assessment of QMS readiness and single most critical gap to address before inspection."
 }
 
-RULES: Be specific — exact CFR parts, ISO clause numbers, ICH guideline codes. Score 1–100. Low=1-39 (significant work needed), Moderate=40-69, High=70-100 (well-prepared). verify_links must be real working primary source URLs relevant to this product. CRITICAL: "ready" field must ALWAYS be true in the final JSON — never output ready:false. Output JSON only when ready — never include any text outside the JSON.`;
+RULES: Be specific — exact CFR parts, ISO clause numbers, ICH guideline codes. Score 1–100. Low=1-39 (significant work needed), Moderate=40-69, High=70-100 (well-prepared). CRITICAL: Never output JSON with null values — if you need more info ask a follow-up question instead. Every field must have real content. Output JSON only when you have complete information — never include any text outside the JSON.`;
 const MODE_INTROS = {
   ra: "Hey! I&rsquo;m <strong>RegIQ</strong> &mdash; your regulatory pathway assistant.<br/><br/>Tell me about your product and I&rsquo;ll identify your submission pathway, lead authority, and risk profile. Or just say hi first if you&rsquo;d like &mdash; I&rsquo;m here.",
   qa: "Hey! I&rsquo;m <strong>RegIQ</strong> &mdash; your QA readiness assistant.<br/><br/>Tell me about your product and QMS situation and I&rsquo;ll score your readiness and flag your top gaps. Or just say hi first &mdash; I&rsquo;m here."
@@ -1044,13 +1044,28 @@ async function sendMessage() {
     try {
       // Strip markdown code fences if present
       let clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-      // Find the outermost JSON object containing "ready": true
+      // Find the outermost JSON object
       const start = clean.indexOf('{');
       const end = clean.lastIndexOf('}');
       if(start !== -1 && end !== -1) {
         const jsonStr = clean.substring(start, end+1);
         const candidate = JSON.parse(jsonStr);
-        if(candidate.ready || (candidate.mode && (candidate.risk_score || candidate.readiness_score))) parsed = candidate;
+        // Strict validation — ALL critical fields must be present and non-null
+        const isRA = candidate.mode === 'ra'
+          && candidate.fda_pathway && candidate.fda_pathway !== 'null'
+          && candidate.risk_score && candidate.risk_score > 0
+          && candidate.risk_level
+          && candidate.product_type
+          && candidate.risk_breakdown && Object.keys(candidate.risk_breakdown).length > 0
+          && candidate.top_risks && candidate.top_risks.length > 0;
+        const isQA = candidate.mode === 'qa'
+          && candidate.applicable_standard && candidate.applicable_standard !== 'null'
+          && candidate.readiness_score && candidate.readiness_score > 0
+          && candidate.readiness_level
+          && candidate.product_type
+          && candidate.readiness_breakdown && Object.keys(candidate.readiness_breakdown).length > 0
+          && candidate.top_gaps && candidate.top_gaps.length > 0;
+        if(isRA || isQA) parsed = candidate;
       }
     } catch(e){ parsed = null; }
     if(parsed && (parsed.mode === 'ra' || parsed.mode === 'qa')) {
@@ -1059,7 +1074,13 @@ async function sendMessage() {
       document.getElementById('exStrip').style.display='none';
       renderResults(parsed); setSteps(2);
     } else {
-      addMsg('ai',fmt(raw)); history.push({role:'assistant',content:raw});
+      // If raw looks like JSON but failed validation — ask user for more detail
+      const looksLikeJson = raw.trim().startsWith('{');
+      const fallbackMsg = looksLikeJson
+        ? 'I need a bit more detail to complete the analysis. Could you tell me more about the intended use, target market, or any known regulatory history for this product?'
+        : fmt(raw);
+      addMsg('ai', fallbackMsg);
+      history.push({role:'assistant',content:raw});
       qCount++; setSteps(1); btn.disabled=false; ta.focus();
     }
   } catch(err) {
