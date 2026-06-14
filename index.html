@@ -1077,15 +1077,15 @@ async function sendMessage() {
     }
     let parsed=null;
     try {
-      // Strip markdown code fences if present
       let clean = raw.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-      // Find the outermost JSON object
       const start = clean.indexOf('{');
       const end = clean.lastIndexOf('}');
+      console.log('Raw response length:', raw.length);
+      console.log('Raw first 200 chars:', raw.substring(0,200));
       if(start !== -1 && end !== -1) {
         const jsonStr = clean.substring(start, end+1);
         const candidate = JSON.parse(jsonStr);
-        // Strict validation — ALL critical fields must be present and non-null
+        console.log('Parsed mode:', candidate.mode, 'fda_pathway:', candidate.fda_pathway, 'risk_score:', candidate.risk_score);
         const isRA = candidate.mode === 'ra'
           && candidate.fda_pathway && candidate.fda_pathway !== 'null'
           && candidate.risk_score && candidate.risk_score > 0
@@ -1100,9 +1100,10 @@ async function sendMessage() {
           && candidate.product_type
           && candidate.readiness_breakdown && Object.keys(candidate.readiness_breakdown).length > 0
           && candidate.top_gaps && candidate.top_gaps.length > 0;
+        console.log('isRA:', isRA, 'isQA:', isQA);
         if(isRA || isQA) parsed = candidate;
       }
-    } catch(e){ parsed = null; }
+    } catch(e){ console.log('Parse error:', e.message); parsed = null; }
     if(parsed && (parsed.mode === 'ra' || parsed.mode === 'qa')) {
       history.push({role:'assistant',content:raw}); done=true;
       addMsg('ai', mode==='ra'?'Analysis complete. Here\'s your full regulatory profile:':'Assessment complete. Here\'s your QA readiness profile:');
