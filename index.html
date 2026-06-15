@@ -1359,19 +1359,25 @@ async function sendMessage() {
       history.push({role:'assistant',content:raw}); done=true;
       addMsg('ai', mode==='ra'?'Analysis complete. Here\'s your full regulatory profile:':'Assessment complete. Here\'s your QA readiness profile:');
       document.getElementById('exStrip').style.display='none';
-      renderResults(parsed); setSteps(2);
+      try {
+        renderResults(parsed);
+      } catch(renderErr) {
+        console.error('Render error:', renderErr);
+        addMsg('ai', 'The analysis completed successfully but there was an error displaying the results. Please try again or use a more specific product description.');
+        done=false; btn.disabled=false;
+      }
+      setSteps(2);
     } else {
-      // If raw looks like JSON but failed validation — ask user for more detail
-      const looksLikeJson = raw.trim().startsWith('{') || raw.trim().startsWith('```');
-      const fallbackMsg = looksLikeJson
-        ? fmt(raw)
-        : fmt(raw);
+      const fallbackMsg = fmt(raw);
       addMsg('ai', fallbackMsg);
       history.push({role:'assistant',content:raw});
       qCount++; setSteps(1); btn.disabled=false; ta.focus();
     }
   } catch(err) {
-    thinkEl.remove(); addMsg('ai','Connection error — please check your internet and try again.'); btn.disabled=false; console.error(err);
+    thinkEl.remove();
+    addMsg('ai', 'Connection error — please check your internet and try again.');
+    btn.disabled=false;
+    console.error('Network error:', err);
   }
 }
 
@@ -1411,22 +1417,25 @@ function renderResults(d) {
     // New markets array format — all markets equal
     if(d.markets && d.markets.length > 0) {
       d.markets.forEach(function(m) {
+        if(!m) return; // skip null entries
         var pathwayRows = '';
         if(m.pathways && m.pathways.length > 0) {
-          var sorted = m.pathways.slice().sort(function(a,b){ return b.confidence - a.confidence; });
+          var sorted = m.pathways.slice().sort(function(a,b){ return (b.confidence||0) - (a.confidence||0); });
           sorted.forEach(function(p, idx) {
-            var barColor = p.confidence >= 40 ? 'var(--accent)' : 'var(--border2)';
+            if(!p) return;
+            var conf = p.confidence || 0;
+            var barColor = conf >= 40 ? 'var(--accent)' : 'var(--border2)';
             var isLast = idx === sorted.length - 1;
             pathwayRows +=
               '<div style="margin-bottom:' + (isLast?'0':'10px') + ';padding-bottom:' + (isLast?'0':'10px') + ';border-bottom:' + (isLast?'none':'1px solid var(--border)') + '">' +
                 '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-                  '<span style="font-size:0.8rem;font-weight:700;color:var(--text)">' + p.pathway + '</span>' +
-                  '<span style="font-size:0.76rem;font-weight:700;color:var(--accent)">' + p.confidence + '%</span>' +
+                  '<span style="font-size:0.8rem;font-weight:700;color:var(--text)">' + (p.pathway||'') + '</span>' +
+                  '<span style="font-size:0.76rem;font-weight:700;color:var(--accent)">' + conf + '%</span>' +
                 '</div>' +
                 '<div style="height:3px;background:var(--border);border-radius:2px;margin-bottom:6px;overflow:hidden">' +
-                  '<div style="height:100%;width:' + p.confidence + '%;background:' + barColor + ';border-radius:2px;transition:width 1.1s ease"></div>' +
+                  '<div style="height:100%;width:' + conf + '%;background:' + barColor + ';border-radius:2px;transition:width 1.1s ease"></div>' +
                 '</div>' +
-                '<div style="font-size:0.73rem;color:var(--soft);line-height:1.5">' + fmt(p.reasoning) + '</div>' +
+                '<div style="font-size:0.73rem;color:var(--soft);line-height:1.5">' + fmt(p.reasoning||'') + '</div>' +
               '</div>';
           });
         } else if(m.pathway) {
@@ -1436,7 +1445,7 @@ function renderResults(d) {
         marketBlocks +=
           '<div class="rb s3">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
-              '<div class="rbl" style="margin-bottom:0">' + m.authority + ' — ' + m.country + '</div>' +
+              '<div class="rbl" style="margin-bottom:0">' + (m.authority||'') + (m.country ? ' — ' + m.country : '') + '</div>' +
               (m.timeline ? '<div style="font-size:0.68rem;color:var(--soft)">' + m.timeline + '</div>' : '') +
             '</div>' +
             pathwayRows +
