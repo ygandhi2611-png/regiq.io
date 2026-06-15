@@ -1148,6 +1148,13 @@ const QA_SYSTEM = `You are RegIQ's QA Readiness module — an expert AI quality 
 YOUR CORE BEHAVIOUR:
 You think like a senior QA consultant. Extract everything the user already told you. NEVER ask them to repeat information already given. Only ask questions that would change your readiness assessment. If you have enough info — go straight to JSON output.
 
+MARKET SPECIFICITY RULES (critical):
+- ONLY assess QMS requirements for the markets the user explicitly mentioned. If they said "EU only" — assess against EU MDR QMS requirements only. Do NOT add FDA, UK MHRA, or any other market unless asked.
+- USA/US = FDA (21 CFR Part 820 QMSR / ISO 13485:2016). EU = EU MDR 2017/745 QMS requirements. UK = MHRA / UK MDR 2002. India = CDSCO. Canada = Health Canada. Australia = TGA. Japan = PMDA.
+- Give EQUAL depth to every market requested — never treat FDA as default or primary.
+- key_standards and verify_links must ONLY reference standards and authorities for the requested markets.
+- NEVER include FDA 483 references, 21 CFR citations, or FDA inspection expectations unless USA was explicitly requested.
+
 CRITICAL REGULATORY UPDATE — EFFECTIVE FEBRUARY 2, 2026:
 FDA's Quality Management System Regulation (QMSR) is now in effect. 21 CFR Part 820 has been amended to incorporate by reference ISO 13485:2016 as the new CGMP standard for medical devices. Key implications:
 - The old QSR (21 CFR Part 820 pre-2026) is replaced by QMSR which harmonizes with ISO 13485:2016
@@ -1509,8 +1516,14 @@ function renderResults(d) {
     '<div class="rb s3"><div class="rbl">Strategic Summary</div><div style="font-size:0.83rem;line-height:1.78;color:var(--muted)">'+fmt(d.summary)+'</div></div>'+
     '<div class="rb s3"><div class="rbl">'+itemLabel+'</div><div class="rlist">'+riskItems+'</div></div>'+
     '<div class="rb s3"><div class="rbl">'+regsLabel+'</div><div class="tagrow">'+regTags+'</div></div>'+
-    '<div class="rb s3"><div class="rbl">Verify Primary Sources</div><div class="verify-grid">'+verifyLinks+'</div></div>'+
-    '<div class="disc"><span style="flex-shrink:0;margin-top:1px">'+discSvg+'</span><span><strong>Educational use only.</strong> This '+summaryType+' is grounded in publicly available guidance but does not constitute '+adviceType+' advice. Always verify against current primary sources and consult a qualified '+profType+' professional. References current as of 2026.</span></div>';
+    '<div class="rb s3"><div class="rbl">Verify Primary Sources</div><div class="verify-grid">'+verifyLinks+'</div></div>';
+
+  // Disclaimer outside the grid — always aligned
+  var discEl = document.createElement('div');
+  discEl.className = 'disc';
+  discEl.style.cssText = 'margin-top:10px;grid-column:unset;';
+  discEl.innerHTML = '<span style="flex-shrink:0;margin-top:1px">'+discSvg+'</span><span><strong>Educational use only.</strong> This '+summaryType+' is grounded in publicly available guidance but does not constitute '+adviceType+' advice. Always verify against current primary sources and consult a qualified '+profType+' professional. References current as of 2026.</span>';
+  area.appendChild(discEl);
 
   area.classList.add('visible');
   document.getElementById('resetRow').classList.add('visible');
