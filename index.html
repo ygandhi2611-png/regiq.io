@@ -1548,6 +1548,7 @@ function renderResults(d) {
   discEl.style.cssText = 'margin-top:10px;grid-column:unset;';
   discEl.innerHTML = '<span style="flex-shrink:0;margin-top:1px">'+discSvg+'</span><span><strong>Educational use only.</strong> This '+summaryType+' is grounded in publicly available guidance but does not constitute '+adviceType+' advice. Always verify against current primary sources and consult a qualified '+profType+' professional. References current as of 2026.</span>';
   area.appendChild(discEl);
+  var subj=encodeURIComponent('RegIQ Feedback -- '+d.product_type);
   var body=encodeURIComponent('Module: '+(isRA?'RA Pathway':'QA Readiness')+'\nProduct: '+d.product_type+'\nScore: '+score+'/100\n\nFeedback:\n');
   document.getElementById('feedbackBtn').href='mailto:ygandhi.corpdesk@outlook.com?subject='+subj+'&body='+body;
   area.scrollIntoView({behavior:'smooth',block:'start'});
