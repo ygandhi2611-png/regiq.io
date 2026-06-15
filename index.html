@@ -404,7 +404,7 @@
     }
 
     /* Reset */
-    .reset-row { display: none; padding: 0 22px 20px; }
+    .reset-row { display: none; padding: 0 22px 20px; margin-top: 14px; }
     .reset-row.visible { display: flex; }
     .reset-btn {
       font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
@@ -1527,7 +1527,17 @@ function renderResults(d) {
 
   area.classList.add('visible');
   document.getElementById('resetRow').classList.add('visible');
-  var subj=encodeURIComponent('RegIQ Feedback -- '+d.product_type);
+
+  // Remove any existing disclaimer before adding new one
+  var existingDisc = area.querySelector('.disc');
+  if(existingDisc) existingDisc.remove();
+
+  // Disclaimer outside the grid — always aligned
+  var discEl = document.createElement('div');
+  discEl.className = 'disc';
+  discEl.style.cssText = 'margin-top:10px;grid-column:unset;';
+  discEl.innerHTML = '<span style="flex-shrink:0;margin-top:1px">'+discSvg+'</span><span><strong>Educational use only.</strong> This '+summaryType+' is grounded in publicly available guidance but does not constitute '+adviceType+' advice. Always verify against current primary sources and consult a qualified '+profType+' professional. References current as of 2026.</span>';
+  area.appendChild(discEl);
   var body=encodeURIComponent('Module: '+(isRA?'RA Pathway':'QA Readiness')+'\nProduct: '+d.product_type+'\nScore: '+score+'/100\n\nFeedback:\n');
   document.getElementById('feedbackBtn').href='mailto:ygandhi.corpdesk@outlook.com?subject='+subj+'&body='+body;
   area.scrollIntoView({behavior:'smooth',block:'start'});
