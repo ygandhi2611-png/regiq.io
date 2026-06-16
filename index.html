@@ -1142,7 +1142,18 @@ CRITICAL RULES:
 - key_regulations and verify_links must only reference the requested markets' authorities
 - Risk 1-100: Low=1-39, Moderate=40-69, High=70-100
 - Be specific: exact regulation codes, guideline numbers, article references for every market
-- Never output null values for requested fields — every market block must be fully populated`
+- Never output null values for requested fields — every market block must be fully populated
+
+VERIFIED LINKS LIBRARY — only use URLs from this list, never invent URLs:
+FDA: https://www.fda.gov/combination-products | https://www.fda.gov/medical-devices/premarket-notification-510k | https://www.fda.gov/medical-devices/premarket-approval-pma | https://www.fda.gov/medical-devices/how-study-and-market-your-device/de-novo-classification-request | https://www.fda.gov/drugs/development-approval-process-drugs/new-drug-application-nda | https://www.fda.gov/drugs/types-applications/abbreviated-new-drug-application-anda | https://www.fda.gov/vaccines-blood-biologics/development-approval-process-cber/biologics-license-applications-bla-process-cber | https://www.fda.gov/drugs/development-approval-process-drugs/investigational-new-drug-ind-application | https://www.fda.gov/drugs/biosimilars | https://www.fda.gov/regulatory-information/search-fda-guidance-documents | https://www.fda.gov/medical-devices/quality-management-system-regulation-qmsr | https://www.ecfr.gov/current/title-21
+EMA: https://www.ema.europa.eu/en/human-regulatory/marketing-authorisation | https://www.ema.europa.eu/en/human-regulatory/research-development/scientific-guidelines | https://www.ema.europa.eu/en/human-regulatory/research-development/biosimilar-medicines | https://www.ema.europa.eu/en/human-regulatory/research-development/advanced-therapies
+MHRA: https://www.gov.uk/guidance/medicines-get-a-licence-to-market-a-medicine | https://www.gov.uk/guidance/clinical-trials-for-medicines-apply-for-authorisation-in-the-uk | https://www.gov.uk/guidance/medical-devices-uk-approved-bodies-and-the-ukca-marking
+PMDA: https://www.pmda.go.jp/english/review-services/reviews/0001.html | https://www.pmda.go.jp/english/review-services/consultations/0001.html
+CDSCO: https://cdsco.gov.in/opencms/opencms/en/New-Drug/ | https://cdsco.gov.in/opencms/opencms/en/Clinical-Trial1/
+Health Canada: https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/drug-submission-guidance.html | https://www.canada.ca/en/health-canada/services/drugs-health-products/medical-devices.html
+TGA: https://www.tga.gov.au/how-we-regulate/medicines/types-medicine-applications | https://www.tga.gov.au/how-we-regulate/devices
+ICH: https://www.ich.org/page/quality-guidelines | https://www.ich.org/page/safety-guidelines | https://www.ich.org/page/efficacy-guidelines
+ISO: https://www.iso.org/standard/59752.html | https://www.iso.org/standard/72778.html`
 const QA_SYSTEM = `You are RegIQ's QA Readiness module — an expert AI quality assurance assistant with deep knowledge of pharmaceutical and medical device quality systems, GxP requirements, and regulatory inspection expectations globally.
 
 YOUR CORE BEHAVIOUR:
@@ -1203,7 +1214,18 @@ CRITICAL RULES:
 - After the user answers your questions, OUTPUT JSON IMMEDIATELY — never ask more questions
 - Never output JSON with null values — every field must have real content
 - Score 1-100: Low=1-39, Moderate=40-69, High=70-100
-- Be specific: exact CFR parts, ISO clause numbers, ICH guideline codes`;
+- Be specific: exact CFR parts, ISO clause numbers, ICH guideline codes
+
+VERIFIED LINKS LIBRARY — only use URLs from this list, never invent URLs:
+FDA QMS: https://www.fda.gov/medical-devices/quality-management-system-regulation-qmsr | https://www.ecfr.gov/current/title-21/chapter-I/subchapter-H/part-820 | https://www.fda.gov/inspections-compliance-enforcement-and-criminal-investigations/inspection-references/fda-form-483-frequently-asked-questions | https://www.fda.gov/drugs/pharmaceutical-quality/current-good-manufacturing-practice-cgmp-regulations
+ISO: https://www.iso.org/standard/59752.html | https://www.iso.org/standard/72778.html
+ICH Quality: https://www.ich.org/page/quality-guidelines
+EMA QMS: https://www.ema.europa.eu/en/human-regulatory/research-development/compliance/good-manufacturing-practice
+MHRA: https://www.gov.uk/guidance/good-manufacturing-practice-and-good-distribution-practice
+PMDA: https://www.pmda.go.jp/english/review-services/reviews/0001.html
+CDSCO: https://cdsco.gov.in/opencms/opencms/en/Medical-Device-Diagnostics/Medical-Device-Diagnostics/
+Health Canada: https://www.canada.ca/en/health-canada/services/drugs-health-products/compliance-enforcement/good-manufacturing-practices.html
+TGA: https://www.tga.gov.au/how-we-regulate/manufacturing/manufacturing-principles-and-guidelines`;
 
 const MODE_INTROS = {
   ra: "Hey! I&rsquo;m <strong>RegIQ</strong> &mdash; your regulatory pathway assistant.<br/><br/>Tell me about your product and I&rsquo;ll identify your submission pathway, lead authority, and risk profile. Or just say hi first if you&rsquo;d like &mdash; I&rsquo;m here.",
